@@ -25,6 +25,7 @@ USER_AGENT = "doomdive/0.1 (poc)"
 
 
 def get_random_title() -> str:
+    """Return the title of a random English Wikipedia article."""
     resp = requests.get(
         WIKI_API,
         params={
@@ -42,6 +43,7 @@ def get_random_title() -> str:
 
 
 def get_article_text(title: str) -> str:
+    """Fetch the full text of a Wikipedia article and return up to 3000 words."""
     wiki = wikipediaapi.Wikipedia(language="en", user_agent=USER_AGENT)
     page = wiki.page(title)
     if not page.exists():
@@ -52,19 +54,23 @@ def get_article_text(title: str) -> str:
 
 @app.get("/dive")
 def dive():
+    """Fetch a random Wikipedia article and return a GPT-generated summary and interesting facts."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+        raise HTTPException(
+            status_code=500, detail="OPENAI_API_KEY not configured")
 
     try:
         title = get_random_title()
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch random article: {e}")
+        raise HTTPException(
+            status_code=502, detail=f"Failed to fetch random article: {e}") from e
 
     try:
         text = get_article_text(title)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch article text: {e}")
+        raise HTTPException(
+            status_code=502, detail=f"Failed to fetch article text: {e}") from e
 
     prompt = (
         "You are an enthusiastic encyclopedia assistant. "
@@ -85,7 +91,8 @@ def dive():
         raw = completion.choices[0].message.content.strip()
         result = json.loads(raw)
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=502, detail=f"GPT returned invalid JSON: {e}")
+        raise HTTPException(
+            status_code=502, detail=f"GPT returned invalid JSON: {e}")
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"OpenAI API error: {e}")
 
