@@ -1,11 +1,11 @@
-import os
-import json
+# import os
+# import json
 import requests
 import wikipediaapi
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAI
+# from openai import OpenAI
 
 load_dotenv()
 
@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 WIKI_API = "https://en.wikipedia.org/w/api.php"
 USER_AGENT = "doomdive/0.1 (poc)"
@@ -55,10 +55,10 @@ def get_article_text(title: str) -> str:
 @app.get("/dive")
 def dive():
     """Fetch a random Wikipedia article and return a GPT-generated summary and interesting facts."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise HTTPException(
-            status_code=500, detail="OPENAI_API_KEY not configured")
+    # api_key = os.getenv("OPENAI_API_KEY")
+    # if not api_key:
+    #     raise HTTPException(
+    #         status_code=500, detail="OPENAI_API_KEY not configured")
 
     try:
         title = get_random_title()
@@ -66,34 +66,42 @@ def dive():
         raise HTTPException(
             status_code=502, detail=f"Failed to fetch random article: {e}") from e
 
-    try:
-        text = get_article_text(title)
-    except Exception as e:
-        raise HTTPException(
-            status_code=502, detail=f"Failed to fetch article text: {e}") from e
+    # try:
+    #     text = get_article_text(title)
+    # except Exception as e:
+    #     raise HTTPException(
+    #         status_code=502, detail=f"Failed to fetch article text: {e}") from e
 
-    prompt = (
-        "You are an enthusiastic encyclopedia assistant. "
-        "Read the following Wikipedia article and return ONLY valid JSON (no markdown, no code fences) with exactly these keys:\n"
-        '  "title": the article title (string),\n'
-        '  "summary": a 2-3 sentence overview (string),\n'
-        '  "interesting_facts": a list of 3-5 concise interesting highlights (array of strings).\n\n'
-        f"Article title: {title}\n\n"
-        f"Article text:\n{text}"
-    )
+    # prompt = (
+    #     "You are an enthusiastic encyclopedia assistant. "
+    #     "Read the following Wikipedia article and return ONLY valid JSON (no markdown, no code fences) with exactly these keys:\n"
+    #     '  "title": the article title (string),\n'
+    #     '  "summary": a 2-3 sentence overview (string),\n'
+    #     '  "interesting_facts": a list of 3-5 concise interesting highlights (array of strings).\n\n'
+    #     f"Article title: {title}\n\n"
+    #     f"Article text:\n{text}"
+    # )
 
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-        )
-        raw = completion.choices[0].message.content.strip()
-        result = json.loads(raw)
-    except json.JSONDecodeError as e:
-        raise HTTPException(
-            status_code=502, detail=f"GPT returned invalid JSON: {e}")
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"OpenAI API error: {e}")
+    # try:
+    #     completion = client.chat.completions.create(
+    #         model="gpt-4o-mini",
+    #         messages=[{"role": "user", "content": prompt}],
+    #         temperature=0.7,
+    #     )
+    #     raw = completion.choices[0].message.content.strip()
+    #     result = json.loads(raw)
+    # except json.JSONDecodeError as e:
+    #     raise HTTPException(
+    #         status_code=502, detail=f"GPT returned invalid JSON: {e}")
+    # except Exception as e:
+    #     raise HTTPException(status_code=502, detail=f"OpenAI API error: {e}")
 
-    return result
+    return {
+        "title": title,
+        "summary": "This is a placeholder summary for the article. It will be replaced by GPT-generated content.",
+        "interesting_facts": [
+            "Placeholder fact one.",
+            "Placeholder fact two.",
+            "Placeholder fact three.",
+        ],
+    }
